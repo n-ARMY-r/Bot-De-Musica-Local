@@ -18,6 +18,7 @@ def descargar_cancion(busqueda: str, bitrate: str = "192"):
     ydl_opts = {
         'default_search': 'ytsearch1',
         'format': 'bestaudio/best',
+        'extractor_args': {'youtube': {'player_client': ['tv_embedded']}},
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
