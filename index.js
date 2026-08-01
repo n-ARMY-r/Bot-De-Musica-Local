@@ -133,8 +133,39 @@ client.on("messageCreate", async (message) => {
     const voiceChannel = message.member.voice.channel;
     if (!voiceChannel) return message.reply("❌ Entra a un canal de voz primero.");
 
-    const song = searchSong(query);
-    if (!song) return message.reply(`❌ No encontré **${query}** en la biblioteca. Usa \`!buscar ${query}\` para ver canciones similares.`);
+    let song = searchSong(query);
+
+if (!song) {
+  await message.reply(`⬇️ No encontré **${query}** en la biblioteca. Descargando...`);
+  
+  try {
+    await new Promise((resolve, reject) => {
+      const proceso = spawn("python3", [
+        "/home/mario/Bot-De-Musica-Local/Bot-Descargas.py",
+        "--auto",
+        query
+      ]);
+
+      proceso.stdout.on("data", (data) => console.log(data.toString()));
+      proceso.stderr.on("data", (data) => console.error(data.toString()));
+      proceso.on("close", (code) => {
+        if (code === 0) resolve();
+        else reject(new Error("Error al descargar"));
+      });
+    });
+
+    // Esperar un momento y buscar de nuevo
+    await new Promise(r => setTimeout(r, 2000));
+    song = searchSong(query);
+
+    if (!song) return message.channel.send("❌ No se pudo descargar la canción.");
+    message.channel.send(`✅ Descargada y lista para reproducir.`);
+
+  } catch (err) {
+    console.error(err);
+    return message.channel.send("❌ Error al descargar la canción.");
+  }
+}
 
     if (!queues.has(guildId)) {
       const player = createAudioPlayer();
