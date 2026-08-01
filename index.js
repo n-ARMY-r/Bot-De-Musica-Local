@@ -160,11 +160,30 @@ if (!song) {
     });
 
     // Esperar un momento y buscar de nuevo
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 3000));
     song = searchSong(query);
 
-    if (!song) return message.channel.send("❌ No se pudo descargar la canción.");
-    message.channel.send(`✅ Descargada y lista para reproducir.`);
+    // Si no encuentra por nombre busca el archivo mas reciente descargado
+if (!song) {
+  const files = fs.readdirSync(MUSIC_FOLDER)
+    .filter(f => f.endsWith(".mp3"))
+    .map(f => ({
+      name: f,
+      time: fs.statSync(path.join(MUSIC_FOLDER, f)).mtime.getTime()
+    }))
+    .sort((a, b) => b.time - a.time);
+
+  if (files.length > 0) {
+    const newest = files[0].name;
+    song = {
+      title: newest.replace(".mp3", "").replace(/_/g, " "),
+      file: path.join(MUSIC_FOLDER, newest)
+    };
+  }
+}
+
+if (!song) return message.channel.send("❌ No se pudo descargar la canción.");
+message.channel.send(`✅ Descargada: **${song.title}**`);
 
   } catch (err) {
     console.error(err);
