@@ -144,7 +144,12 @@ if (!song) {
         "/home/mario/Bot-De-Musica-Local/Bot-Descargas.py",
         "--auto",
         query
-      ]);
+      ], {
+        env: {
+          ...process.env,
+          PATH: `/home/mario/.deno/bin:/home/mario/.local/bin:${process.env.PATH}`
+        }
+    });
 
       proceso.stdout.on("data", (data) => console.log(data.toString()));
       proceso.stderr.on("data", (data) => console.error(data.toString()));
